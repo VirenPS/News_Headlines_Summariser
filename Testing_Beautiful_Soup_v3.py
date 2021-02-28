@@ -22,7 +22,6 @@ class NewsSite:
 
 
 
-
 def articles_html_generator(name, URL, top_n_articles):
     page = requests.get(URL)
 

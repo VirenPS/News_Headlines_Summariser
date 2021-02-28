@@ -1,7 +1,10 @@
 import collections
+import string
 
 import requests
+
 from bs4 import BeautifulSoup
+from Excluded_words_list import excluded_words_list
 
 
 class Article:
@@ -16,46 +19,65 @@ class NewsSite:
         self.name = name
         self.URL = URL
 
-def articles_html_generator(URL, top_n_articles):
-    page = requests.get(URL)
 
+def article_list(URL):
+    page = requests.get(URL)
     articles_list = []
     for article_xml in BeautifulSoup(page.content, 'html.parser').find_all('item'):
         articles_list.append(Article(article_xml))
+    return articles_list
+
+
+
+def articles_html_generator(name, URL, top_n_articles):
 
     # Extracts top 10
-    top_n_articles = articles_list[:top_n_articles]
+    top_n_articles = article_list(URL)[:top_n_articles]
 
-    html_body = ''
+    # Create article_body html template
+    article_body = f'<p><b><u>{name}</u></b>'
     for article in top_n_articles:
-        html_body += f'''<p>
+        article_body += f'''<p>
         <a href='{article.link}'>{article.title}</a>
         <br>{article.description}
         </p>'''
-    return html_body
+    article_body += '</p>'
+
+    return article_body
+
+def title_keyword_summariser_html(news_sites_list, excluded_words_list, top_n_results):
+    article_titles = []
+    for news_site in news_sites_list:
+        article_list_news = article_list(news_site.URL)
+        for i in article_list_news:
+            article_titles.append(i.title)
+
+    article_title_keywords = []
+
+    for title in article_titles:
+        a = title.split()
+        for word in a:
+            translator = str.maketrans('', '', string.punctuation + '‘' + '’')
+            article_title_keywords.append(word.translate(translator).lower())
 
 
-# def keyword_summariser(URL, top_n_articles):
+    keyword_counter = collections.Counter(article_title_keywords).most_common()
+    refined_keywords_list = [i for i in keyword_counter if i[0] not in excluded_words_list]
 
+    keyword_html_summary_table = '''<table style="width: 106px;" border="1" cellpadding="4">
+    <tbody>'''
 
-    # Keyword Summariser
-    # title_keyword_list = []
-    # for article in top_n_articles:
-    #     colon_char = article.title.find(':')
-    #     if colon_char != -1:
-    #         title_keyword_list.append(article.title[0:colon_char])
-    # keyword_counter = collections.Counter(title_keyword_list)
+    for keyword in refined_keywords_list[0:top_n_results]:
+        keyword_html_summary_table += f'''<tr>
+        <td style="width: 62px;">&nbsp;{keyword[0]}</td>
+        <td style="width: 43px;">&nbsp;{keyword[1]}</td>
+        </tr>'''
 
-    # # Append html table.
-    # keyword_html_summary_table = ''
-    # for keyword in keyword_counter:
-    #     # print(keyword, ': ', keyword_counter[keyword])
-    #     keyword_html_summary_table += f'''<tr>
-    #     <td style="width: 62px;">&nbsp;{keyword}</td>
-    #     <td style="width: 43px;">&nbsp;{keyword_counter[keyword]}</td>
-    #     </tr>'''
+    keyword_html_summary_table += '''</tbody>
+    </table>'''
+    return keyword_html_summary_table
 
-def write_to_html(article_body):
+def write_to_html(article_body, title_keyword_summariser_html):
     # html_file = open('webpage.html','r') #Read File
     html_file = open('webpage.html','w') #Write to file File
 
@@ -66,35 +88,29 @@ def write_to_html(article_body):
 
     <p><strong><center>Welcome to Viren's News Headline Summary!</center></strong></p>
 
-    <p><b><u>BBC News</u></b>
-    {articles_html_generator('http://feeds.bbci.co.uk/news/rss.xml', 10)}
+    {article_body}
+    <p><strong><center>Keyword Counter</center></strong></p>
+    {title_keyword_summariser_html}
     </p>
-
-    <p><b><u>Sky News</u></b>
-    {articles_html_generator('http://feeds.skynews.com/feeds/rss/home.xml', 10)}
-    </p>
-
     </body>
     </html>"""
 
     html_file.write(html_main)
     html_file.close()
 
+
 if __name__ == "__main__":
-    news_sites_list = [NewsSite('BBC', 'http://feeds.bbci.co.uk/news/rss.xml'), NewsSite('Sky', 'http://feeds.skynews.com/feeds/rss/home.xml')]
+    news_sites_list = [
+        NewsSite('BBC News', 'http://feeds.bbci.co.uk/news/rss.xml'),
+        NewsSite('Sky News', 'http://feeds.skynews.com/feeds/rss/home.xml'),
+        NewsSite('Metro News', 'https://metro.co.uk/news/feed/')
+        ]
+
+    article_body = ''
+    for news_site in news_sites_list:
+        article_body += articles_html_generator(news_site.name, news_site.URL, 10)
 
 
-    for site in news_sites_list:
-        article_body = ''
-        article_body += articles_html_generator(site.URL, 10)
+    title_keyword_summariser_html = title_keyword_summariser_html(news_sites_list, excluded_words_list, 10)
 
-
-    # write_to_html()
-# Summary Table HTML
-# <table style="width: 106px;" border="1" cellpadding="4">
-#     <tbody>
-#     {keyword_html_summary_table}
-#     </tbody>
-#     </table>
-
-# print(articles_html_generator('http://feeds.skynews.com/feeds/rss/home.xml','Sky',10))
+    write_to_html(article_body, title_keyword_summariser_html)

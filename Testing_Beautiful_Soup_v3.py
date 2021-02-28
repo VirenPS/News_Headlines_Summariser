@@ -16,7 +16,14 @@ class NewsSite:
         self.name = name
         self.URL = URL
 
-def articles_html_generator(URL, top_n_articles):
+
+
+
+
+
+
+
+def articles_html_generator(name, URL, top_n_articles):
     page = requests.get(URL)
 
     articles_list = []
@@ -26,34 +33,36 @@ def articles_html_generator(URL, top_n_articles):
     # Extracts top 10
     top_n_articles = articles_list[:top_n_articles]
 
-    html_body = ''
+    # Create article_body html template
+    article_body = f'<p><b><u>{name}</u></b>'
     for article in top_n_articles:
-        html_body += f'''<p>
+        article_body += f'''<p>
         <a href='{article.link}'>{article.title}</a>
         <br>{article.description}
         </p>'''
-    return html_body
+    article_body += '</p>'
 
+    return article_body
 
-# def keyword_summariser(URL, top_n_articles):
+def keyword_summariser(URL, top_n_articles):
 
 
     # Keyword Summariser
-    # title_keyword_list = []
-    # for article in top_n_articles:
-    #     colon_char = article.title.find(':')
-    #     if colon_char != -1:
-    #         title_keyword_list.append(article.title[0:colon_char])
-    # keyword_counter = collections.Counter(title_keyword_list)
+    title_keyword_list = []
+    for article in top_n_articles:
+        colon_char = article.title.find(':')
+        if colon_char != -1:
+            title_keyword_list.append(article.title[0:colon_char])
+    keyword_counter = collections.Counter(title_keyword_list)
 
-    # # Append html table.
-    # keyword_html_summary_table = ''
-    # for keyword in keyword_counter:
-    #     # print(keyword, ': ', keyword_counter[keyword])
-    #     keyword_html_summary_table += f'''<tr>
-    #     <td style="width: 62px;">&nbsp;{keyword}</td>
-    #     <td style="width: 43px;">&nbsp;{keyword_counter[keyword]}</td>
-    #     </tr>'''
+    # Append html table.
+    keyword_html_summary_table = ''
+    for keyword in keyword_counter:
+        # print(keyword, ': ', keyword_counter[keyword])
+        keyword_html_summary_table += f'''<tr>
+        <td style="width: 62px;">&nbsp;{keyword}</td>
+        <td style="width: 43px;">&nbsp;{keyword_counter[keyword]}</td>
+        </tr>'''
 
 def write_to_html(article_body):
     # html_file = open('webpage.html','r') #Read File
@@ -66,13 +75,7 @@ def write_to_html(article_body):
 
     <p><strong><center>Welcome to Viren's News Headline Summary!</center></strong></p>
 
-    <p><b><u>BBC News</u></b>
-    {articles_html_generator('http://feeds.bbci.co.uk/news/rss.xml', 10)}
-    </p>
-
-    <p><b><u>Sky News</u></b>
-    {articles_html_generator('http://feeds.skynews.com/feeds/rss/home.xml', 10)}
-    </p>
+    {article_body}
 
     </body>
     </html>"""
@@ -80,17 +83,22 @@ def write_to_html(article_body):
     html_file.write(message)
     html_file.close()
 
-if __name__ == "__main__":
-    news_sites_list = [NewsSite('BBC', 'http://feeds.bbci.co.uk/news/rss.xml'), NewsSite('Sky', 'http://feeds.skynews.com/feeds/rss/home.xml')]
+def article_tile_list_generator(URL):
 
+
+if __name__ == "__main__":
+    news_sites_list = [
+        NewsSite('BBC News', 'http://feeds.bbci.co.uk/news/rss.xml'),
+        NewsSite('Sky News', 'http://feeds.skynews.com/feeds/rss/home.xml'),
+        NewsSite('Metro News', 'https://metro.co.uk/news/feed/')
+        ]
 
     article_body = ''
-    for site in news_sites_list:
-        article_body += articles_html_generator(site.URL, 10)
-    print(article_body)
+    for news_site in news_sites_list:
+        article_body += articles_html_generator(news_site.name, news_site.URL, 10)
 
+    write_to_html(article_body)
 
-    # write_to_html()
 # Summary Table HTML
 # <table style="width: 106px;" border="1" cellpadding="4">
 #     <tbody>

@@ -1,7 +1,10 @@
 import collections
+import string
 
 import requests
+
 from bs4 import BeautifulSoup
+from Excluded_words_list import excluded_words_list
 
 
 class Article:
@@ -105,31 +108,34 @@ if __name__ == "__main__":
             article_titles.append(i.title)
 
     article_title_keywords = []
+
     for title in article_titles:
+        # keywords = title.split()
         a = title.split()
-        article_title_keywords += a
-
-    keyword_counter = collections.Counter(article_title_keywords)
-    keyword_counter_ordered = collections.Counter(article_title_keywords).most_common()
-
-    print(keyword_counter_ordered[1])
+        for word in a:
+            translator = str.maketrans('', '', string.punctuation + '‘' + '’')
+            article_title_keywords.append(word.translate(translator))
 
 
-    for keyword in keyword_counter_ordered:
-        # print(keyword, ': ', int(keyword_counter[keyword]))
-        print(keyword[0], ': ', keyword[1])
+    keyword_counter = collections.Counter(article_title_keywords).most_common()
+
+    # print(keyword_counter)
+
+    refined_keywords_list = [i for i in keyword_counter if i[0].lower() not in excluded_words_list]
+
+    print(refined_keywords_list[0:10])
 
 
-    # print(article_titles[5])
-#         article_titles.append(news_site.title)
+    # keyword_counter.remove()
 
-#     for i in range(0,5):
-#         print(article_titles[i].title)
 
-#     keyword_counter = collections.Counter(article_titles.title)
 
-#     for keyword in keyword_counter:
-#         print(keyword, ': ', keyword_counter[keyword])
+    # for tuple_pair in refined_list[0:20]:
+    #     print(tuple_pair[0], ': ', tuple_pair[1])
+
+
+    # for keyword in keyword_counter:
+    #     print(keyword, ': ', keyword_counter[keyword])
 
 
 #     write_to_html(article_body)

@@ -81,7 +81,7 @@ def write_to_html(article_body, title_keyword_summariser_html):
     # html_file = open('webpage.html','r') #Read File
     html_file = open('webpage.html','w') #Write to file File
 
-    message = f"""<html>
+    html_main = f"""<html>
     <meta http-equiv="refresh" content="5">
     <head></head>
     <body>
@@ -95,7 +95,7 @@ def write_to_html(article_body, title_keyword_summariser_html):
     </body>
     </html>"""
 
-    html_file.write(message)
+    html_file.write(html_main)
     html_file.close()
 
 
@@ -109,6 +109,7 @@ if __name__ == "__main__":
     article_body = ''
     for news_site in news_sites_list:
         article_body += articles_html_generator(news_site.name, news_site.URL, 10)
+
 
     title_keyword_summariser_html = title_keyword_summariser_html(news_sites_list, excluded_words_list, 10)
 

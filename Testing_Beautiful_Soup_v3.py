@@ -59,7 +59,7 @@ def write_to_html(article_body):
     # html_file = open('webpage.html','r') #Read File
     html_file = open('webpage.html','w') #Write to file File
 
-    message = f"""<html>
+    html_main = f"""<html>
     <meta http-equiv="refresh" content="5">
     <head></head>
     <body>
@@ -77,17 +77,16 @@ def write_to_html(article_body):
     </body>
     </html>"""
 
-    html_file.write(message)
+    html_file.write(html_main)
     html_file.close()
 
 if __name__ == "__main__":
     news_sites_list = [NewsSite('BBC', 'http://feeds.bbci.co.uk/news/rss.xml'), NewsSite('Sky', 'http://feeds.skynews.com/feeds/rss/home.xml')]
 
 
-    article_body = ''
     for site in news_sites_list:
+        article_body = ''
         article_body += articles_html_generator(site.URL, 10)
-    print(article_body)
 
 
     # write_to_html()

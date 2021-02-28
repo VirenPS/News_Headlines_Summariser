@@ -17,20 +17,19 @@ class NewsSite:
         self.URL = URL
 
 
-
-
+def article_list(URL):
+    page = requests.get(URL)
+    articles_list = []
+    for article_xml in BeautifulSoup(page.content, 'html.parser').find_all('item'):
+        articles_list.append(Article(article_xml))
+    return articles_list
 
 
 
 def articles_html_generator(name, URL, top_n_articles):
-    page = requests.get(URL)
-
-    articles_list = []
-    for article_xml in BeautifulSoup(page.content, 'html.parser').find_all('item'):
-        articles_list.append(Article(article_xml))
 
     # Extracts top 10
-    top_n_articles = articles_list[:top_n_articles]
+    top_n_articles = article_list(URL)[:top_n_articles]
 
     # Create article_body html template
     article_body = f'<p><b><u>{name}</u></b>'
@@ -43,9 +42,8 @@ def articles_html_generator(name, URL, top_n_articles):
 
     return article_body
 
-def keyword_summariser(URL, top_n_articles):
-
-
+def keyword_summariser_html(article_list):
+    # print(article_list)
     # Keyword Summariser
     title_keyword_list = []
     for article in top_n_articles:
@@ -62,6 +60,7 @@ def keyword_summariser(URL, top_n_articles):
         <td style="width: 62px;">&nbsp;{keyword}</td>
         <td style="width: 43px;">&nbsp;{keyword_counter[keyword]}</td>
         </tr>'''
+
 
 def write_to_html(article_body):
     # html_file = open('webpage.html','r') #Read File
@@ -82,7 +81,9 @@ def write_to_html(article_body):
     html_file.write(message)
     html_file.close()
 
-def article_tile_list_generator(URL):
+
+
+
 
 
 if __name__ == "__main__":
@@ -96,7 +97,42 @@ if __name__ == "__main__":
     for news_site in news_sites_list:
         article_body += articles_html_generator(news_site.name, news_site.URL, 10)
 
-    write_to_html(article_body)
+    article_titles = []
+
+    for news_site in news_sites_list:
+        article_list_news = article_list(news_site.URL)
+        for i in article_list_news:
+            article_titles.append(i.title)
+
+    article_title_keywords = []
+    for title in article_titles:
+        a = title.split()
+        article_title_keywords += a
+
+    keyword_counter = collections.Counter(article_title_keywords)
+    keyword_counter_ordered = collections.Counter(article_title_keywords).most_common()
+
+    print(keyword_counter_ordered[1])
+
+
+    for keyword in keyword_counter_ordered:
+        # print(keyword, ': ', int(keyword_counter[keyword]))
+        print(keyword[0], ': ', keyword[1])
+
+
+    # print(article_titles[5])
+#         article_titles.append(news_site.title)
+
+#     for i in range(0,5):
+#         print(article_titles[i].title)
+
+#     keyword_counter = collections.Counter(article_titles.title)
+
+#     for keyword in keyword_counter:
+#         print(keyword, ': ', keyword_counter[keyword])
+
+
+#     write_to_html(article_body)
 
 # Summary Table HTML
 # <table style="width: 106px;" border="1" cellpadding="4">

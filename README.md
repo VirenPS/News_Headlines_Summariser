@@ -5,3 +5,5 @@ Summarises news articles of the largest news outlets, and brings up 'keyword' an
 On completion of summarisation, autogenerates a html webpage which is published to github and made public containing the findings.
 
 Words excluded including pronouns, adjectives... . 
+
+![image](https://user-images.githubusercontent.com/43384066/151714962-f6346036-4019-4423-b7cd-2d4a56723627.png)
